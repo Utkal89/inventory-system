@@ -1,25 +1,12 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
 from datetime import datetime
 
-# ── Product Schemas ───────────────────────────────────────
 class ProductBase(BaseModel):
     name: str
     sku: str
     price: float
     quantity: int
-
-    @validator("price")
-    def price_positive(cls, v):
-        if v < 0:
-            raise ValueError("Price cannot be negative")
-        return v
-
-    @validator("quantity")
-    def qty_non_negative(cls, v):
-        if v < 0:
-            raise ValueError("Quantity cannot be negative")
-        return v
 
 class ProductCreate(ProductBase):
     pass
@@ -33,12 +20,8 @@ class ProductUpdate(BaseModel):
 class Product(ProductBase):
     id: int
     created_at: datetime
+    model_config = {"from_attributes": True}
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
-
-# ── Customer Schemas ──────────────────────────────────────
 class CustomerBase(BaseModel):
     name: str
     email: str
@@ -50,21 +33,11 @@ class CustomerCreate(CustomerBase):
 class Customer(CustomerBase):
     id: int
     created_at: datetime
+    model_config = {"from_attributes": True}
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
-
-# ── Order Item Schemas ────────────────────────────────────
 class OrderItemCreate(BaseModel):
     product_id: int
     quantity: int
-
-    @validator("quantity")
-    def qty_positive(cls, v):
-        if v <= 0:
-            raise ValueError("Quantity must be positive")
-        return v
 
 class OrderItem(BaseModel):
     id: int
@@ -72,12 +45,8 @@ class OrderItem(BaseModel):
     quantity: int
     unit_price: float
     product: Optional[Product] = None
+    model_config = {"from_attributes": True}
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
-
-# ── Order Schemas ─────────────────────────────────────────
 class OrderCreate(BaseModel):
     customer_id: int
     items: List[OrderItemCreate]
@@ -90,7 +59,4 @@ class Order(BaseModel):
     created_at: datetime
     customer: Optional[Customer] = None
     items: List[OrderItem] = []
-
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    model_config = {"from_attributes": True}
